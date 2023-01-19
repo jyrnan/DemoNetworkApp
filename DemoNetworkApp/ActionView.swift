@@ -23,8 +23,8 @@ struct ActionView: View {
                     if isPeerConnected {
                         Text("当前连接设备").padding()
                     }
-//                    Text("IP: \(vm.hasSelectedDevice)")
-//                        .padding()
+                    Text("IP: \(vm.connections.filter{$0.id == vm.hasSelectedDevice}.first?.connection?.endpoint.debugDescription ?? "Not connected")")
+                        .padding()
                 }
                 .padding()
                 
@@ -33,18 +33,21 @@ struct ActionView: View {
                 VStack {
                     Button("测试发送TCP数据", action: {
                         guard vm.hasSelectedDevice != nil else {return}
-                        vm.sendTo(connectionID: vm.hasSelectedDevice!, message: "TCP Data".data(using: .utf8)!)
+                        vm.send(message: "TCP Data".data(using: .utf8)!,connectionID: vm.hasSelectedDevice!)
                     })
                         .padding()
                         .disabled(!isPeerConnected)
                     Button("测试发送UDP命令", action: {
                         guard vm.hasSelectedDevice != nil else {return}
-                        vm.sendTo(connectionID: vm.hasSelectedDevice!, message: "UDP Data".data(using: .utf8)!)
+                        vm.send(message: "UDP Data".data(using: .utf8)!,connectionID: vm.hasSelectedDevice!)
                     })
                         .padding()
                         .disabled(!isPeerConnected)
                     Button("断开当前设备连接", action: {
-                        
+                        if let connection = vm.connections.filter({$0.id == vm.hasSelectedDevice}).first {
+                            connection.cancel()
+                            vm.hasSelectedDevice = nil
+                        }
                     })
                         .padding()
                         .buttonStyle(.borderedProminent)

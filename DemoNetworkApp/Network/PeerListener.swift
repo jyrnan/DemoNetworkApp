@@ -124,7 +124,7 @@ class PeerListener {
     // MARK: - Send
     
     func sendTo(id: UUID, message: Data) {
-        self.connectionsByID[id]?.sendMessage(message: message)
+        self.connectionsByID[id]?.send(message: message)
     }
 }
 
@@ -143,7 +143,11 @@ extension PeerListener: PeerConnectionDelegate {
         self.delegate?.receivedMessage(content: content, message: message)
     }
     
-    func displayAdvertizeError(_ error: NWError) {}
+    func displayAdvertizeError(_ error: NWError) {
+        delegate?.displayAdvertizeError(error)
+    }
     
-    func connectionError(connection: PeerConnection, error: NWError) {}
+    func connectionError(connection: PeerConnection, error: NWError) {
+        delegate?.connectionError(connection: connection, error: error)
+    }
 }

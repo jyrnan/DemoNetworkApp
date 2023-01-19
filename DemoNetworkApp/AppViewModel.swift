@@ -4,58 +4,54 @@
 //  Created by jyrnan on 2023/1/12.
 //
 
-import SwiftUI
 import Network
+import SwiftUI
 
 class YMLNetwork {}
 
 class AppViewModel: ObservableObject, PeerListenerDelegate {
-    //MARK: - Types
+    // MARK: - Types
     
     enum AppType {
         case SERVER
         case CLIENT
     }
     
-    
     static let mock = AppViewModel()
 //    static let shared = AppViewModel()
             
-    private init() {startListen()}
+    private init() { startListen() }
     
     var listener: PeerListener?
-    var connection: PeerConnection?
-        
-    @Published var servers: [PeerConnection] = []
-    @Published var clients: [PeerConnection] = []
-    @Published var logs: [Log] = [Log(content: "Sample string")]
+    var tempConnection: PeerConnection?
+    
     @Published var hasSelectedDevice: UUID?
-    
-    var willConnectToDevice: PeerConnection?
-    
+    @Published var connections: [PeerConnection] = []
+        
+    var servers: [PeerConnection] {connections.filter{$0.initatedConnection}}
+    var clients: [PeerConnection] {connections.filter{!$0.initatedConnection}}
+    @Published var logs: [Log] = []
+        
     let testData: Data = "Test Data".data(using: .utf8)!
     
     func startListen() {
-        guard listener == nil else {return}
+        guard listener == nil else { return }
         listener = PeerListener(on: 8899, delegate: self)
     }
     
     func startConnectionTo(host: String) {
-        let endppint = NWEndpoint.hostPort(host: .init(host), port: .init(rawValue: 8899)!)
+        let hostStr = host.split(separator: ":").first ?? ""
+        let port = UInt16(host.split(separator: ":").last ?? "") ?? 8899
+        let endppint = NWEndpoint.hostPort(host: .init(String(hostStr)), port: .init(rawValue: port)!)
         
-        guard servers.filter({$0.endPoint == endppint}).isEmpty else {return}
-        connection = PeerConnection(endpoint: endppint, interface: nil, passcode: "", delegat: self)
-//        servers.append(connection)
+        guard connections.filter({ $0.endPoint == endppint }).isEmpty else { return }
+        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: "", delegat: self)
     }
     
-//    func send(message: Data) {
-//        connection?.sendMessage(message: message)
-//    }
-    
-    func sendTo(connectionID: UUID, message: Data) {
-        listener?.connectionsByID[connectionID]?.sendMessage(message: message)
-        if let connection = self.servers.filter({$0.id == connectionID}).first {
-            connection.sendMessage(message: message)
+    func send(message: Data, connectionID: UUID) {
+        listener?.connectionsByID[connectionID]?.send(message: message)
+        if let connection = servers.filter({ $0.id == connectionID }).first {
+            connection.send(message: message)
         }
     }
     
@@ -63,53 +59,44 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     
     private func updateLog(with string: String) {
         let time = Date.now
-        let timeStr = time.formatted(date: .omitted, time: .shortened)
+        let timeStr = time.formatted(date: .omitted, time: .standard)
         
         DispatchQueue.main.async {
             self.logs.append(Log(content: timeStr + ": " + string))
         }
     }
     
-    private func setSelectedDevice(device: PeerConnection?) {
+    private func setSelectedPeer(connection: PeerConnection?) {
         DispatchQueue.main.async { [self] in
-            self.hasSelectedDevice = device?.id
-            willConnectToDevice = nil
+            withAnimation{
+                self.hasSelectedDevice = connection?.id}
         }
     }
     
-    func addClientPeer(connection: PeerConnection) {
+    func addPeer(connection: PeerConnection) {
         DispatchQueue.main.async {
-            self.clients.append(connection)
+            withAnimation{
+                self.connections.append(connection)}
         }
     }
     
-    func removedConnection(connection: PeerConnection) {
+    func removePeer(connection: PeerConnection) {
         DispatchQueue.main.async {
-            try? self.clients.removeAll(where: {$0.id == connection.id})
-            try? self.servers.removeAll(where: {$0.id == connection.id})
-        }
-    }
-    
-    func addServerPeer(connection: PeerConnection) {
-        DispatchQueue.main.async {
-            self.servers.append(connection)
+            withAnimation{
+                self.connections.removeAll(where: { $0.id == connection.id })}
         }
     }
     
     // MARK: - ConnectionProtocol
 
     func connectionReady(connection: PeerConnection) {
-        updateLog(with: "Connection ready")
-        if connection.initatedConnection {
-            addServerPeer(connection: connection)
-        } else {
-            addClientPeer(connection: connection)
-        }
+        updateLog(with: "\(connection.name) connected")
+        addPeer(connection: connection)
     }
     
     func connectionFailed(connection: PeerConnection) {
-        updateLog(with: "Connection failed")
-        removedConnection(connection: connection)
+        updateLog(with: "\(connection.name) disconnected")
+        removePeer(connection: connection)
     }
     
     func receivedMessage(content: Data?, message: NWProtocolFramer.Message?) {
@@ -123,11 +110,11 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     }
     
     func connectionError(connection: PeerConnection, error: NWError) {
+        updateLog(with: "\(connection.name)\n" + error.debugDescription)
     }
     
     // MARK: - ListenerProtocol
 
-    
     func ListenerReady() {
         updateLog(with: "Listening started")
     }

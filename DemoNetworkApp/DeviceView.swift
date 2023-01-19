@@ -8,65 +8,61 @@ import SwiftUI
 
 struct DeviceView: View {
     @ObservedObject var vm: AppViewModel
-    @State var IPinput: String = "192.168.1."
+    @State var IPinput: String
+    
+    init(vm: AppViewModel) {
+        self.vm = vm
+        self.IPinput = vm.getWiFiAddress() ?? ""
+    }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                List{
+
+                List(selection: $vm.hasSelectedDevice) {
+                    
                     Section(header: Text("Connect to")
-                        .onTapGesture { vm.hideKeyboard() }) {
-                        HStack {
-                            TextField("Input server address", text: $IPinput)
-                            Spacer()
-                            Button("Connect") {
-                                vm.startConnectionTo(host: IPinput)
-                            }
+                        ) {
+                            HStack {
+                                TextField("Input ip:port", text: $IPinput)
+                                Spacer()
+                                Button("Connect") {
+                                    vm.startConnectionTo(host: IPinput)
+                                }
+                                .buttonStyle(BorderlessButtonStyle())
                                 .disabled(IPinput.count < 4)
+                            }.onTapGesture { vm.hideKeyboard() }
                         }
-                    }
                     
                     Section(header: Text("Local")) {
                         localServer
-                        
                     }
-                    
-                    
-                }
-                
-                
-                List(selection: $vm.hasSelectedDevice) {
                     
                     Section(header: Text("Server")) {
                         if vm.servers.isEmpty {
-                            Text("No remote server")
+                            Text("No server").foregroundColor(.gray)
                         }
                         ForEach(vm.servers) { peer in
                             deviceView(device: peer)
                         }
                     }
                     
-
                     Section(header: Text("Client")) {
                         if vm.clients.isEmpty {
-                            Text("No client")
+                            Text("No client").foregroundColor(.gray)
                         }
                         ForEach(vm.clients) { peer in
                             deviceView(device: peer)
                         }
                     }
+                    
                 }
-                .refreshable {}
-               
-                if vm.hasSelectedDevice != nil {
-                    Text("connected to: \(vm.hasSelectedDevice.debugDescription)")
-                }
+                Text(vm.logs.last?.content ?? "").foregroundColor(.gray).padding()
             }
             
             .navigationTitle(Text("Devices"))
         }
         .tabItem { Label("Device", systemImage: "desktopcomputer") }
-        
     }
     
     @ViewBuilder
@@ -77,7 +73,8 @@ struct DeviceView: View {
                 .font(.title)
                 .foregroundColor(isConnected ? .accentColor : .primary)
 
-            Text("IP: \(device?.connection?.endpoint.debugDescription ?? "NO")")
+            Text("\(device?.connection?.endpoint.debugDescription ?? "")")
+                .foregroundColor(isConnected ? .accentColor : .primary)
         }
     }
     
@@ -87,10 +84,8 @@ struct DeviceView: View {
             HStack {
                 Image(systemName: "desktopcomputer")
                     .font(.title)
-                    .foregroundColor(.green)
-                Text("Local: \(vm.getWiFiAddress() ?? ""):\(port)")
+                Text("\(vm.getWiFiAddress() ?? ""):\(port)")
                     .bold()
-                    .foregroundColor(.green)
             }
         }
     }

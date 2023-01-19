@@ -19,13 +19,12 @@ protocol PeerConnectionDelegate: AnyObject {
 class PeerConnection {
     // MARK: - Properties
 
-//    private static var nextID: Int = 0
-
     weak var delegate: PeerConnectionDelegate?
     
     var connection: NWConnection?
     let endPoint: NWEndpoint?
     let id: UUID = UUID()
+    var name: String = ""
     
     // 预设连接的类型参数
     // TODO: - 创建自定义连接类型参数来实现不同的NWConnection类型
@@ -33,6 +32,8 @@ class PeerConnection {
     
     // 标记连接是主动发起连接还是被动接入连接
     let initatedConnection: Bool
+    
+    
     
     // MARK: - Inits
     
@@ -80,6 +81,7 @@ class PeerConnection {
             
             switch newState {
             case .ready:
+                self.name = connection.endpoint.debugDescription
                 print("\(connection) established")
                 
                 // 如果准备就绪就开始接收消息
@@ -123,13 +125,28 @@ class PeerConnection {
     // MARK: - Send
     
     // 设置发送消息，可以参考 sendMove(_ move: String)
-    func sendMessage(message: Data) {
+    func send(message: Data) {
         guard let connection = connection else { return }
         
         // 数据封包方法
+        let sizePrefix = withUnsafeBytes(of: UInt16(message.count).bigEndian) { Data($0) }
         
-        // 调用框架真正的发送方法
-        connection.send(content: message, completion: .idempotent)
+        print("Send \(message.count) bytes")
+        
+        connection.batch {
+            connection.send(content: sizePrefix, completion: .contentProcessed{[weak self] error in
+                guard let self = self else { return }
+                if let error = error {
+                    self.delegate?.connectionError(connection: self, error: error)
+                }
+            })
+            connection.send(content: message, completion: .contentProcessed{[weak self] error in
+                guard let self = self else { return }
+                if let error = error {
+                    self.delegate?.connectionError(connection: self, error: error)
+                }
+            })
+        }
     }
     
     // MARK: - Receive
