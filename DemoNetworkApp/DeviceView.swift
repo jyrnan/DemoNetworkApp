@@ -36,6 +36,7 @@ struct DeviceView: View {
                     
                     Section(header: Text("Local")) {
                         localServer
+                        localServerSSL
                     }
                     
                     Section(header: Text("Server")) {
@@ -81,6 +82,18 @@ struct DeviceView: View {
     @ViewBuilder
     var localServer: some View {
         if let port = vm.listener?.listener?.port?.debugDescription {
+            HStack {
+                Image(systemName: "desktopcomputer")
+                    .font(.title)
+                Text("\(vm.getWiFiAddress() ?? ""):\(port)")
+                    .bold()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var localServerSSL: some View {
+        if let port = vm.listenerSSL?.listener?.port?.debugDescription {
             HStack {
                 Image(systemName: "desktopcomputer")
                     .font(.title)

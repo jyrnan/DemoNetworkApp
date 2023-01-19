@@ -41,9 +41,8 @@ class PeerConnection {
     init(endpoint: NWEndpoint, interface: NWInterface?, passcode: String, delegat: PeerConnectionDelegate) {
         self.delegate = delegat
         self.endPoint = endpoint
-
         
-        let connection = NWConnection(to: endpoint, using: NWParameters(passcode: passcode))
+        let connection = NWConnection(to: endpoint, using: passcode == "" ? .tcp : NWParameters(passcode: passcode))
         self.connection = connection
         self.initatedConnection = true
 

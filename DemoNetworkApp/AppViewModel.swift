@@ -23,6 +23,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     private init() { startListen() }
     
     var listener: PeerListener?
+    var listenerSSL: PeerListener?
     var tempConnection: PeerConnection?
     
     @Published var hasSelectedDevice: UUID?
@@ -37,6 +38,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     func startListen() {
         guard listener == nil else { return }
         listener = PeerListener(on: 8899, delegate: self)
+        listenerSSL = PeerListener(delegate: self, name: "NWFramework", passcode: "8888")
     }
     
     func startConnectionTo(host: String) {
@@ -44,8 +46,10 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
         let port = UInt16(host.split(separator: ":").last ?? "") ?? 8899
         let endppint = NWEndpoint.hostPort(host: .init(String(hostStr)), port: .init(rawValue: port)!)
         
+        let passcode = port == 8899 ? "" : "8888"
+        
         guard connections.filter({ $0.endPoint == endppint }).isEmpty else { return }
-        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: "8888", delegat: self)
+        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: passcode, delegat: self)
     }
     
     func send(message: Data, connectionID: UUID) {

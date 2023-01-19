@@ -26,7 +26,7 @@ class PeerListener {
     
     weak var delegate: PeerListenerDelegate?
     var listener: NWListener?
-    let port: UInt16
+    var port: UInt16 = 8899
     
     var connectionsByID: [UUID: PeerConnection] = [:]
     
@@ -47,13 +47,40 @@ class PeerListener {
         self.setupTcpListener()
     }
     
+    // 创建一个指定端口号的监听者用来接收连接
+    init(delegate: PeerListenerDelegate, name: String, passcode: String) {
+        self.delegate = delegate
+        self.name = name
+        self.passcode = passcode
+        self.setupBonjourTcpListener()
+    }
+    
     // MARK: - Setup listener
     
     private func setupTcpListener() {
         do {
-//            let listener = try NWListener(using: parameters, on: .init(rawValue: port)!)
-            let listener = try NWListener(using: NWParameters(passcode: "8888"))
+            let listener = try NWListener(using: parameters, on: .init(rawValue: port)!)
             self.listener = listener
+            
+            self.startListening()
+        } catch {
+            print("创建服务监听失败")
+            abort()
+        }
+    }
+    
+    private func setupBonjourTcpListener() {
+        do {
+            guard let name = self.name, let passcode = self.passcode else {
+                print("Cannot create Bonjour listener without name and passcode")
+                return
+            }
+            
+            let listener = try NWListener(using: NWParameters(passcode: passcode))
+            self.listener = listener
+            
+            // Set the service to advertise.
+            listener.service = NWListener.Service(name: name, type: "_tictactoe._tcp")
             
             self.startListening()
         } catch {
@@ -100,7 +127,6 @@ class PeerListener {
             break
         case .waiting(let error):
             self.delegate?.displayAdvertizeError(error)
-            break
         case .ready:
             print("Listener ready on \(String(describing: self.listener?.port))")
             self.delegate?.ListenerReady()
@@ -145,10 +171,10 @@ extension PeerListener: PeerConnectionDelegate {
     }
     
     func displayAdvertizeError(_ error: NWError) {
-        delegate?.displayAdvertizeError(error)
+        self.delegate?.displayAdvertizeError(error)
     }
     
     func connectionError(connection: PeerConnection, error: NWError) {
-        delegate?.connectionError(connection: connection, error: error)
+        self.delegate?.connectionError(connection: connection, error: error)
     }
 }
