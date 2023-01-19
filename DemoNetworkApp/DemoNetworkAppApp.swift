@@ -9,9 +9,10 @@ import SwiftUI
 
 @main
 struct DemoNetworkAppApp: App {
+    @StateObject var vm: AppViewModel = AppViewModel.mock
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(vm: vm)
         }
     }
 }

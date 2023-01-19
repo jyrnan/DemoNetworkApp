@@ -1,26 +1,27 @@
 //
 //  ContentView.swift
-//  DemoNetworkApp
+//  
 //
-//  Created by jyrnan on 2023/1/17.
+//  Created by jyrnan on 2023/1/12.
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var vm: AppViewModel
+    @State var currentTab: String?
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        TabView(selection: $currentTab) {
+            DeviceView(vm: vm)
+            ActionView(vm: vm)
+            LogView(vm:vm)
         }
-        .padding()
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(vm: AppViewModel.mock)
     }
 }

@@ -8,17 +8,30 @@
 
 /* Begin PBXBuildFile section */
 		D26EBB0A297632F000BA2012 /* DemoNetworkAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB09297632F000BA2012 /* DemoNetworkAppApp.swift */; };
-		D26EBB0C297632F000BA2012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB0B297632F000BA2012 /* ContentView.swift */; };
 		D26EBB0E297632F100BA2012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D26EBB0D297632F100BA2012 /* Assets.xcassets */; };
 		D26EBB11297632F100BA2012 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D26EBB10297632F100BA2012 /* Preview Assets.xcassets */; };
+		D26EBB1C297634B600BA2012 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB17297634B600BA2012 /* AppViewModel.swift */; };
+		D26EBB1E297634B600BA2012 /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB19297634B600BA2012 /* DeviceView.swift */; };
+		D26EBB1F297634B600BA2012 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB1A297634B600BA2012 /* LogView.swift */; };
+		D26EBB20297634B600BA2012 /* ActionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB1B297634B600BA2012 /* ActionView.swift */; };
+		D26EBB25297638E500BA2012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB24297638E500BA2012 /* ContentView.swift */; };
+		D26EBB272976392500BA2012 /* PeerConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB262976392500BA2012 /* PeerConnection.swift */; };
+		D26EBB2A29768A7500BA2012 /* PeerListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB2929768A7500BA2012 /* PeerListener.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D26EBB06297632F000BA2012 /* DemoNetworkApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoNetworkApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D26EBB09297632F000BA2012 /* DemoNetworkAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoNetworkAppApp.swift; sourceTree = "<group>"; };
-		D26EBB0B297632F000BA2012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D26EBB0D297632F100BA2012 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D26EBB10297632F100BA2012 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D26EBB17297634B600BA2012 /* AppViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
+		D26EBB19297634B600BA2012 /* DeviceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
+		D26EBB1A297634B600BA2012 /* LogView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		D26EBB1B297634B600BA2012 /* ActionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActionView.swift; sourceTree = "<group>"; };
+		D26EBB24297638E500BA2012 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D26EBB262976392500BA2012 /* PeerConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerConnection.swift; sourceTree = "<group>"; };
+		D26EBB2929768A7500BA2012 /* PeerListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerListener.swift; sourceTree = "<group>"; };
+		D26EBB3329778F5000BA2012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,8 +64,14 @@
 		D26EBB08297632F000BA2012 /* DemoNetworkApp */ = {
 			isa = PBXGroup;
 			children = (
+				D26EBB3329778F5000BA2012 /* Info.plist */,
 				D26EBB09297632F000BA2012 /* DemoNetworkAppApp.swift */,
-				D26EBB0B297632F000BA2012 /* ContentView.swift */,
+				D26EBB24297638E500BA2012 /* ContentView.swift */,
+				D26EBB1B297634B600BA2012 /* ActionView.swift */,
+				D26EBB19297634B600BA2012 /* DeviceView.swift */,
+				D26EBB1A297634B600BA2012 /* LogView.swift */,
+				D26EBB17297634B600BA2012 /* AppViewModel.swift */,
+				D26EBB282976392D00BA2012 /* Network */,
 				D26EBB0D297632F100BA2012 /* Assets.xcassets */,
 				D26EBB0F297632F100BA2012 /* Preview Content */,
 			);
@@ -65,6 +84,15 @@
 				D26EBB10297632F100BA2012 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		D26EBB282976392D00BA2012 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				D26EBB262976392500BA2012 /* PeerConnection.swift */,
+				D26EBB2929768A7500BA2012 /* PeerListener.swift */,
+			);
+			path = Network;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,8 +165,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D26EBB0C297632F000BA2012 /* ContentView.swift in Sources */,
+				D26EBB1F297634B600BA2012 /* LogView.swift in Sources */,
 				D26EBB0A297632F000BA2012 /* DemoNetworkAppApp.swift in Sources */,
+				D26EBB272976392500BA2012 /* PeerConnection.swift in Sources */,
+				D26EBB25297638E500BA2012 /* ContentView.swift in Sources */,
+				D26EBB1E297634B600BA2012 /* DeviceView.swift in Sources */,
+				D26EBB1C297634B600BA2012 /* AppViewModel.swift in Sources */,
+				D26EBB20297634B600BA2012 /* ActionView.swift in Sources */,
+				D26EBB2A29768A7500BA2012 /* PeerListener.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,6 +304,8 @@
 				DEVELOPMENT_TEAM = M9X4Q7NPJT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DemoNetworkApp/Info.plist;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "DemoNetwork need access local network";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -299,6 +335,8 @@
 				DEVELOPMENT_TEAM = M9X4Q7NPJT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DemoNetworkApp/Info.plist;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "DemoNetwork need access local network";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
