@@ -23,7 +23,7 @@ struct ActionView: View {
                     if isPeerConnected {
                         Text("当前连接设备").padding()
                     }
-                    Text("IP: \(vm.connections.filter{$0.id == vm.hasSelectedDevice}.first?.connection?.endpoint.debugDescription ?? "Not connected")")
+                    Text("IP: \(vm.connections.filter{$0.id == vm.hasSelectedDevice}.first?.connection?.endpoint.debugDescription ?? "No peer selected")")
                         .padding()
                 }
                 .padding()
@@ -57,7 +57,7 @@ struct ActionView: View {
             .padding()
             .navigationTitle("Actions")
         }
-        .tabItem{Label("Action", systemImage: "playpause.circle")}
+        .tabItem{Label("Action", systemImage: "command")}
     }
 }
 
