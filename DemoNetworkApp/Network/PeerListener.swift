@@ -51,7 +51,8 @@ class PeerListener {
     
     private func setupTcpListener() {
         do {
-            let listener = try NWListener(using: parameters, on: .init(rawValue: port)!)
+//            let listener = try NWListener(using: parameters, on: .init(rawValue: port)!)
+            let listener = try NWListener(using: NWParameters(passcode: "8888"))
             self.listener = listener
             
             self.startListening()

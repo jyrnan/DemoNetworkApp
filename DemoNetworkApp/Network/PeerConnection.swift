@@ -43,7 +43,7 @@ class PeerConnection {
         self.endPoint = endpoint
 
         
-        let connection = NWConnection(to: endpoint, using: parameters)
+        let connection = NWConnection(to: endpoint, using: NWParameters(passcode: passcode))
         self.connection = connection
         self.initatedConnection = true
 

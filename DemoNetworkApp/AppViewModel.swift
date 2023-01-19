@@ -45,7 +45,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
         let endppint = NWEndpoint.hostPort(host: .init(String(hostStr)), port: .init(rawValue: port)!)
         
         guard connections.filter({ $0.endPoint == endppint }).isEmpty else { return }
-        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: "", delegat: self)
+        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: "8888", delegat: self)
     }
     
     func send(message: Data, connectionID: UUID) {
