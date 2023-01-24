@@ -33,7 +33,6 @@ class PeerListener {
     var connectionsByID: [UUID: PeerConnection] = [:]
     
     // 预设连接的类型参数
-    // TODO: - 创建自定义连接类型参数来实现不同的NWConnection类型
     var parameters: NWParameters = .tcp
     
     // 用于bonjour发现
@@ -42,7 +41,7 @@ class PeerListener {
     
     // MARK: - Inits
     
-    // 创建一个指定端口号的监听者用来接收连接，根据指定类型来创建tcp或者udp，默认tcp
+    // 创建一个指定端口号的监听者用来接收连接，根据指定类型来创建非加密tcp或者udp，默认tcp
     init(on port: UInt16, delegate: PeerListenerDelegate, type: PeerType = .tcp) {
         self.port = port
         self.delegate = delegate
@@ -90,7 +89,7 @@ class PeerListener {
             self.listener = listener
             
             // Set the service to advertise.
-            listener.service = NWListener.Service(name: name, type: "_tictactoe._tcp")
+            listener.service = NWListener.Service(name: name, type: "_demoNWapp._tcp")
             
             self.startListening()
         } catch {

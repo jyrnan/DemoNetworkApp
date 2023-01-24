@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct DemoNetworkAppApp: App {
-    @StateObject var vm: AppViewModel = AppViewModel.mock
+    @StateObject var vm: AppViewModel = AppViewModel.shared
     var body: some Scene {
         WindowGroup {
             ContentView(vm: vm)

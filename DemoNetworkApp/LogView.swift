@@ -25,6 +25,6 @@ struct LogView: View {
 
 struct LogView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(vm: AppViewModel.mock, currentTab: "Log")
+        ContentView(vm: AppViewModel.shared, currentTab: "Log")
     }
 }

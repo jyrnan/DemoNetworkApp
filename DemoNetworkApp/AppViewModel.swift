@@ -19,8 +19,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         case CLIENT
     }
     
-    static let mock = AppViewModel()
-//    static let shared = AppViewModel()
+    static let shared = AppViewModel()
             
     private init() {
         self.browser = PeerBrowser(delegate: self)
@@ -48,7 +47,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         guard listener == nil else { return }
         listener = PeerListener(on: 8899, delegate: self,type: .tcp)
         listenerUdp = PeerListener(on: 8898, delegate: self, type: .udp)
-        listenerSSL = PeerListener(delegate: self, name: "DemoNWApp", passcode: "8888")
+        listenerSSL = PeerListener(delegate: self, name: (getWiFiAddress() ?? "NoWiFi"), passcode: "8888")
     }
     
     func startConnectionTo(host: String) {
@@ -71,11 +70,9 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         }
         
        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: passcode, delegat: self)
-        tempConnection?.type = .tcpSSL
     }
     
     func send(message: Data, connectionID: UUID) {
-//        listener?.connectionsByID[connectionID]?.send(message: message)
         if let connection = connections.filter({ $0.id == connectionID }).first {
             connection.send(message: message)
         }
@@ -90,6 +87,8 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         DispatchQueue.main.async {
             self.logs.append(Log(content: timeStr + ": " + string))
         }
+        
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred() //震动提示
     }
     
     private func setSelectedPeer(connection: PeerConnection?) {

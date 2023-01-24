@@ -16,7 +16,7 @@ struct ActionView: View {
     
     var body: some View {
         NavigationView{
-            VStack {
+            ScrollView {
                 VStack{
                     Image(systemName: "desktopcomputer")
                         .resizable()
@@ -65,6 +65,9 @@ struct ActionView: View {
             }
             .padding()
             .navigationTitle("Actions")
+            .onTapGesture {
+                vm.hideKeyboard()
+            }
         }
         .tabItem{Label("Action", systemImage: "command")}
     }
@@ -72,7 +75,6 @@ struct ActionView: View {
 
 struct ActionView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(vm: AppViewModel.mock, currentTab: "Action")
-//        ActionView(vm: AppViewModel.mock)
+        ContentView(vm: AppViewModel.shared, currentTab: "Action")
     }
 }

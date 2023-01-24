@@ -99,55 +99,11 @@ struct DeviceView: View {
             }
         }
     }
-    
-    @ViewBuilder
-    var localServerUdp: some View {
-        if let port = vm.listenerUdp?.listener?.port?.debugDescription {
-            HStack {
-                Image(systemName: "desktopcomputer")
-                    .font(.title)
-                Text("\(vm.getWiFiAddress() ?? ""):\(port)")
-                    .bold()
-                Text(vm.listenerUdp?.type.description ?? "")
-            }
-        }
-    }
-    
-    @ViewBuilder
-    var localServerSSL: some View {
-        if let port = vm.listenerSSL?.listener?.port?.debugDescription {
-            HStack {
-                Image(systemName: "desktopcomputer")
-                    .font(.title)
-                Text("\(vm.getWiFiAddress() ?? ""):\(port)")
-                    .bold()
-                
-            }
-        }
-    }
-    
-//    @ViewBuilder
-//    func PeertypeView(type: PeerType) -> some View {
-//        switch type {
-//        case .udp:
-//            Text("U").font(.caption)
-//                .bold().foregroundColor(.white).padding(3)
-//                .background(Circle().foregroundColor(.green))
-//        case .tcp:
-//            Text("T").font(.caption)
-//                .bold().foregroundColor(.white).padding(3)
-//                .background(Circle().foregroundColor(.blue))
-//        case .tcpSSL:
-//            Text("S").font(.caption)
-//                .bold().foregroundColor(.white).padding(3)
-//                .background(Circle().foregroundColor(.orange))
-//        }
-//    }
 }
 
 struct DeviceView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(vm: AppViewModel.mock)
+        ContentView(vm: AppViewModel.shared)
     }
 }
 

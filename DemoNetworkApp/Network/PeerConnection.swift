@@ -16,39 +16,34 @@ protocol PeerConnectionDelegate: AnyObject {
     func connectionError(connection: PeerConnection, error: NWError)
 }
 
-enum PeerType:String, CustomStringConvertible {
-    var description: String {self.rawValue}
+enum PeerType: String, CustomStringConvertible {
+    var description: String { rawValue }
     
     case udp
     case tcp
-    case tcpSSL //支持bonjour的tcp连接
+    case tcpSSL // 支持bonjour发现和PSK的tcp连接
 }
 
 class PeerConnection {
-    //MARK: - Types
-    
-    
-    
     // MARK: - Properties
 
     weak var delegate: PeerConnectionDelegate?
     
     var connection: NWConnection?
     let endPoint: NWEndpoint?
-    let id: UUID = UUID()
+    let id: UUID = .init()
+    
+    // 以连接ip和端口号作为该连接的名字，连接准备就绪时会修改成ip和端口号
     var name: String = ""
     
-    //标识连接类型
+    // 标识连接类型
     var type: PeerType = .tcp
     
     // 预设连接的类型参数
-    // TODO: - 创建自定义连接类型参数来实现不同的NWConnection类型
     var parameters: NWParameters = .tcp
     
     // 标记连接是主动发起连接还是被动接入连接
     let initatedConnection: Bool
-    
-    
     
     // MARK: - Inits
     
@@ -62,7 +57,7 @@ class PeerConnection {
             parameters = .udp
         }
         
-        let connection = NWConnection(to: endpoint, using:parameters)
+        let connection = NWConnection(to: endpoint, using: parameters)
         self.connection = connection
         self.initatedConnection = true
 
@@ -73,6 +68,7 @@ class PeerConnection {
     init(endpoint: NWEndpoint, interface: NWInterface?, passcode: String, delegat: PeerConnectionDelegate) {
         self.delegate = delegat
         self.endPoint = endpoint
+        self.type = .tcpSSL
         
         let connection = NWConnection(to: endpoint, using: passcode == "" ? .tcp : NWParameters(passcode: passcode))
         self.connection = connection
@@ -158,7 +154,18 @@ class PeerConnection {
     // 设置发送消息，可以参考 sendMove(_ move: String)
     func send(message: Data) {
         guard let connection = connection else { return }
-
+        
+        if case .udp = type {
+            connection.send(content: message, completion: .contentProcessed {
+                [weak self] error in
+                guard let self = self else { return }
+                if let error = error {
+                    self.delegate?.connectionError(connection: self, error: error)
+                }
+            })
+            
+            return
+        }
         
         // 数据封包方法
         let sizePrefix = withUnsafeBytes(of: UInt16(message.count).bigEndian) { Data($0) }
@@ -166,13 +173,13 @@ class PeerConnection {
         print("Send \(message.count) bytes")
         
         connection.batch {
-            connection.send(content: sizePrefix, completion: .contentProcessed{[weak self] error in
+            connection.send(content: sizePrefix, completion: .contentProcessed { [weak self] error in
                 guard let self = self else { return }
                 if let error = error {
                     self.delegate?.connectionError(connection: self, error: error)
                 }
             })
-            connection.send(content: message, completion: .contentProcessed{[weak self] error in
+            connection.send(content: message, completion: .contentProcessed { [weak self] error in
                 guard let self = self else { return }
                 if let error = error {
                     self.delegate?.connectionError(connection: self, error: error)
@@ -184,7 +191,7 @@ class PeerConnection {
     // MARK: - Receive
     
     func setReceive() {
-        switch self.type {
+        switch type {
         case .tcp:
             receiveByStream()
         case .udp:
@@ -232,7 +239,6 @@ class PeerConnection {
             if let error = error {
                 self.delegate?.displayAdvertizeError(error)
             } else {
-                
                 // 获得数据包长度，继续调用方法获得该长度的数据
                 self.connection?.receive(minimumIncompleteLength: Int(sizePrefix), maximumLength: Int(sizePrefix)) { content, _, isComplete, error in
                     if let data = content, !data.isEmpty {
@@ -261,6 +267,7 @@ extension PeerConnection: Hashable {
     static func == (lhs: PeerConnection, rhs: PeerConnection) -> Bool {
         return lhs.id == rhs.id
     }
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }

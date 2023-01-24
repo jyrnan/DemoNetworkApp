@@ -33,7 +33,7 @@ extension NWParameters {
 		let tlsOptions = NWProtocolTLS.Options()
 
 		let authenticationKey = SymmetricKey(data: passcode.data(using: .utf8)!)
-		var authenticationCode = HMAC<SHA256>.authenticationCode(for: "TicTacToe".data(using: .utf8)!, using: authenticationKey)
+		var authenticationCode = HMAC<SHA256>.authenticationCode(for: "DemoNWApp".data(using: .utf8)!, using: authenticationKey)
 
 		let authenticationDispatchData = withUnsafeBytes(of: &authenticationCode) { (ptr: UnsafeRawBufferPointer) in
 			DispatchData(bytes: ptr)
@@ -41,7 +41,7 @@ extension NWParameters {
 
 		sec_protocol_options_add_pre_shared_key(tlsOptions.securityProtocolOptions,
 												authenticationDispatchData as __DispatchData,
-												stringToDispatchData("TicTacToe")! as __DispatchData)
+												stringToDispatchData("DemoNWApp")! as __DispatchData)
 		sec_protocol_options_append_tls_ciphersuite(tlsOptions.securityProtocolOptions,
 													tls_ciphersuite_t(rawValue: TLS_PSK_WITH_AES_128_GCM_SHA256)!)
 		return tlsOptions

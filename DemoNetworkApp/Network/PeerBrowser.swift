@@ -33,7 +33,7 @@ class PeerBrowser {
         parameters.includePeerToPeer = true
 
         // Browse for a custom "_tictactoe._tcp" service type.
-        let browser = NWBrowser(for: .bonjour(type: "_tictactoe._tcp", domain: nil), using: parameters)
+        let browser = NWBrowser(for: .bonjour(type: "_demoNWapp._tcp", domain: nil), using: parameters)
         self.browser = browser
         browser.stateUpdateHandler = { newState in
             switch newState {
