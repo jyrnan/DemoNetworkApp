@@ -60,6 +60,8 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         //如果已经创建了的连接，则不再重复创建
         guard connections.filter({ $0.endPoint == endppint }).isEmpty else { return }
         
+        if tempConnection != nil {tempConnection?.cancel()}
+        
         if port == 8898 {
             tempConnection = PeerConnection(endpoint: endppint, delegat: self, type: .udp)
             return
@@ -70,6 +72,11 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         }
         
        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: passcode, delegat: self)
+    }
+    
+    func startConnectionTo(result: NWBrowser.Result) {
+        if tempConnection != nil {tempConnection?.cancel()}
+        tempConnection = PeerConnection(endpoint: result.endpoint, interface: result.interfaces.first, passcode: "8888", delegat: self)
     }
     
     func send(message: Data, connectionID: UUID) {

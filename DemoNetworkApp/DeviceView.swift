@@ -45,9 +45,15 @@ struct DeviceView: View {
                         if vm.results.isEmpty {
                             Text("No server found").foregroundColor(.gray)
                         }
-                        ForEach(vm.results.map{$0.endpoint},id: \.hashValue) {result in
-                            Text(result.debugDescription)
+                        ForEach(vm.results.map{$0.endpoint},id: \.hashValue) {endpoint in
+                            Text(endpoint.debugDescription)
+                                .onTapGesture {
+                                    if let result = vm.results.filter({$0.endpoint == endpoint}).first {
+                                        vm.startConnectionTo(result: result)
+                                    }
+                                }
                         }
+                        
                     }
                     
                     Section(header: Text("Peer Connection")) {
