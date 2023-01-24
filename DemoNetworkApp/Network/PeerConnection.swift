@@ -16,7 +16,19 @@ protocol PeerConnectionDelegate: AnyObject {
     func connectionError(connection: PeerConnection, error: NWError)
 }
 
+enum PeerType:String, CustomStringConvertible {
+    var description: String {self.rawValue}
+    
+    case udp
+    case tcp
+    case tcpSSL //支持bonjour的tcp连接
+}
+
 class PeerConnection {
+    //MARK: - Types
+    
+    
+    
     // MARK: - Properties
 
     weak var delegate: PeerConnectionDelegate?
@@ -26,9 +38,12 @@ class PeerConnection {
     let id: UUID = UUID()
     var name: String = ""
     
+    //标识连接类型
+    var type: PeerType = .tcp
+    
     // 预设连接的类型参数
     // TODO: - 创建自定义连接类型参数来实现不同的NWConnection类型
-    let parameters: NWParameters = .tcp
+    var parameters: NWParameters = .tcp
     
     // 标记连接是主动发起连接还是被动接入连接
     let initatedConnection: Bool
@@ -37,7 +52,24 @@ class PeerConnection {
     
     // MARK: - Inits
     
-    // 创建主动发起的连接。设置网络途径(interface)，passcode用来创建tls连接，这两个参数可以考虑暂时无视
+    // 创建主动发起的连接，根据连接类型创建udp或tcp连接
+    init(endpoint: NWEndpoint, delegat: PeerConnectionDelegate, type: PeerType = .tcp) {
+        self.delegate = delegat
+        self.endPoint = endpoint
+        self.type = type
+        
+        if case .udp = type {
+            parameters = .udp
+        }
+        
+        let connection = NWConnection(to: endpoint, using:parameters)
+        self.connection = connection
+        self.initatedConnection = true
+
+        startConnection()
+    }
+    
+    // 创建主动发起tcpSSL，支持bonjour的连接。设置网络途径(interface)，passcode用来创建tls连接
     init(endpoint: NWEndpoint, interface: NWInterface?, passcode: String, delegat: PeerConnectionDelegate) {
         self.delegate = delegat
         self.endPoint = endpoint
@@ -126,6 +158,7 @@ class PeerConnection {
     // 设置发送消息，可以参考 sendMove(_ move: String)
     func send(message: Data) {
         guard let connection = connection else { return }
+
         
         // 数据封包方法
         let sizePrefix = withUnsafeBytes(of: UInt16(message.count).bigEndian) { Data($0) }
@@ -151,7 +184,14 @@ class PeerConnection {
     // MARK: - Receive
     
     func setReceive() {
+        switch self.type {
+        case .tcp:
             receiveByStream()
+        case .udp:
+            receiveByMessage()
+        case .tcpSSL:
+            receiveByStream()
+        }
     }
     
     // 设置接收消息，转交给代理，并接受下一个消息 主要用于UDP？

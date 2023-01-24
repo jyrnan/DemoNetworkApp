@@ -30,6 +30,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
     var browser: PeerBrowser!
     
     var listener: PeerListener?
+    var listenerUdp: PeerListener?
     var listenerSSL: PeerListener?
     var tempConnection: PeerConnection?
     
@@ -45,7 +46,8 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
     
     func startListen() {
         guard listener == nil else { return }
-        listener = PeerListener(on: 8899, delegate: self)
+        listener = PeerListener(on: 8899, delegate: self,type: .tcp)
+        listenerUdp = PeerListener(on: 8898, delegate: self, type: .udp)
         listenerSSL = PeerListener(delegate: self, name: "DemoNWApp", passcode: "8888")
     }
     
@@ -56,12 +58,24 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         
         let passcode = port == 8899 ? "" : "8888"
         
+        //如果已经创建了的连接，则不再重复创建
         guard connections.filter({ $0.endPoint == endppint }).isEmpty else { return }
-        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: passcode, delegat: self)
+        
+        if port == 8898 {
+            tempConnection = PeerConnection(endpoint: endppint, delegat: self, type: .udp)
+            return
+        }
+        if port == 8899 {
+            tempConnection = PeerConnection(endpoint: endppint, delegat: self, type: .tcp)
+            return
+        }
+        
+       tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: passcode, delegat: self)
+        tempConnection?.type = .tcpSSL
     }
     
     func send(message: Data, connectionID: UUID) {
-        listener?.connectionsByID[connectionID]?.send(message: message)
+//        listener?.connectionsByID[connectionID]?.send(message: message)
         if let connection = connections.filter({ $0.id == connectionID }).first {
             connection.send(message: message)
         }
@@ -95,7 +109,13 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
     func removePeer(connection: PeerConnection) {
         DispatchQueue.main.async {
             withAnimation{
-                self.connections.removeAll(where: { $0.id == connection.id })}
+                self.connections.removeAll(where: { $0.id == connection.id })
+                
+                // 如果断开的是当前连接设备，则清除当前连接设备
+                if connection.id == self.hasSelectedDevice {
+                    self.hasSelectedDevice = nil
+                }
+            }
         }
     }
     

@@ -35,8 +35,10 @@ struct DeviceView: View {
                         }
                     
                     Section(header: Text("Local")) {
-                        localServer
-                        localServerSSL
+                        localServer(listener: vm.listenerUdp)
+                        localServer(listener: vm.listener)
+                        localServer(listener: vm.listenerSSL)
+                        
                     }
                     
                     Section(header: Text("Found Device")) {
@@ -80,17 +82,33 @@ struct DeviceView: View {
 
             Text("\(device?.connection?.endpoint.debugDescription ?? "")")
                 .foregroundColor(isConnected ? .accentColor : .primary)
+            
+            PeertypeView(type: device?.type ?? .tcp)
         }
     }
     
     @ViewBuilder
-    var localServer: some View {
-        if let port = vm.listener?.listener?.port?.debugDescription {
+    func localServer(listener: PeerListener?) -> some View {
+        if let port = listener?.listener?.port?.debugDescription, let type = listener?.type {
             HStack {
                 Image(systemName: "desktopcomputer")
                     .font(.title)
                 Text("\(vm.getWiFiAddress() ?? ""):\(port)")
                     .bold()
+                PeertypeView(type: type)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var localServerUdp: some View {
+        if let port = vm.listenerUdp?.listener?.port?.debugDescription {
+            HStack {
+                Image(systemName: "desktopcomputer")
+                    .font(.title)
+                Text("\(vm.getWiFiAddress() ?? ""):\(port)")
+                    .bold()
+                Text(vm.listenerUdp?.type.description ?? "")
             }
         }
     }
@@ -103,13 +121,52 @@ struct DeviceView: View {
                     .font(.title)
                 Text("\(vm.getWiFiAddress() ?? ""):\(port)")
                     .bold()
+                
             }
         }
     }
+    
+//    @ViewBuilder
+//    func PeertypeView(type: PeerType) -> some View {
+//        switch type {
+//        case .udp:
+//            Text("U").font(.caption)
+//                .bold().foregroundColor(.white).padding(3)
+//                .background(Circle().foregroundColor(.green))
+//        case .tcp:
+//            Text("T").font(.caption)
+//                .bold().foregroundColor(.white).padding(3)
+//                .background(Circle().foregroundColor(.blue))
+//        case .tcpSSL:
+//            Text("S").font(.caption)
+//                .bold().foregroundColor(.white).padding(3)
+//                .background(Circle().foregroundColor(.orange))
+//        }
+//    }
 }
 
 struct DeviceView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView(vm: AppViewModel.mock)
+    }
+}
+
+struct PeertypeView: View {
+    var type: PeerType = .tcp
+    var body: some View {
+        switch type {
+        case .udp:
+            Text("U").font(.caption)
+                .bold().foregroundColor(.white).padding(3)
+                .background(Circle().foregroundColor(.green))
+        case .tcp:
+            Text("T").font(.caption)
+                .bold().foregroundColor(.white).padding(3)
+                .background(Circle().foregroundColor(.blue))
+        case .tcpSSL:
+            Text("S").font(.caption)
+                .bold().foregroundColor(.white).padding(3)
+                .background(Circle().foregroundColor(.orange))
+        }
     }
 }

@@ -28,11 +28,13 @@ class PeerListener {
     var listener: NWListener?
     var port: UInt16 = 8899
     
+    var type: PeerType = .tcp
+    
     var connectionsByID: [UUID: PeerConnection] = [:]
     
     // 预设连接的类型参数
     // TODO: - 创建自定义连接类型参数来实现不同的NWConnection类型
-    let parameters: NWParameters = .tcp
+    var parameters: NWParameters = .tcp
     
     // 用于bonjour发现
     var name: String?
@@ -40,24 +42,32 @@ class PeerListener {
     
     // MARK: - Inits
     
-    // 创建一个指定端口号的监听者用来接收连接
-    init(on port: UInt16, delegate: PeerListenerDelegate) {
+    // 创建一个指定端口号的监听者用来接收连接，根据指定类型来创建tcp或者udp，默认tcp
+    init(on port: UInt16, delegate: PeerListenerDelegate, type: PeerType = .tcp) {
         self.port = port
         self.delegate = delegate
-        self.setupTcpListener()
+        self.type = type
+        
+        if case .udp = type {
+            parameters = .udp
+        }
+        
+        self.setupNoSSLListener()
     }
     
-    // 创建一个指定端口号的监听者用来接收连接
+    // 创建一个指定端口号的支持SSL和bonjour监听者用来接收连接
     init(delegate: PeerListenerDelegate, name: String, passcode: String) {
         self.delegate = delegate
         self.name = name
         self.passcode = passcode
+        self.type = .tcpSSL
         self.setupBonjourTcpListener()
     }
     
     // MARK: - Setup listener
     
-    private func setupTcpListener() {
+    // 创建一个指定端口号的监听者用来接收连接，根据指定类型来创建tcp或者udp，默认tcp
+    private func setupNoSSLListener() {
         do {
             let listener = try NWListener(using: parameters, on: .init(rawValue: port)!)
             self.listener = listener
@@ -100,6 +110,7 @@ class PeerListener {
             
             // 接受传入的NWConnection，并用它创建PeerConnection保存在PeerListener中
             let peerConnection = PeerConnection(connection: newConnection, delegate: self)
+            peerConnection.type = self.type
             
             // 保存connection到收到的connection池中
             self.connectionsByID[peerConnection.id] = peerConnection
@@ -134,7 +145,7 @@ class PeerListener {
 //            if error == NWError.dns(DNSServiceErrorType(kDNSServiceErr_DefunctConnection)) {
 //                print("Listener failed with \(error), restarting")
 //                self.listener?.cancel()
-//                self.setupTcpListener()
+//                self.setupNoSSLListener()
 //            } else {
             print("Listener failed with \(error), stopping")
             self.delegate?.displayAdvertizeError(error)

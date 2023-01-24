@@ -9,13 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var vm: AppViewModel
-    @State var currentTab: String?
+    @State var currentTab: String = "Device"
     
     var body: some View {
         TabView(selection: $currentTab) {
-            DeviceView(vm: vm)
-            ActionView(vm: vm)
-            LogView(vm:vm)
+            DeviceView(vm: vm).tag("Device")
+            ActionView(vm: vm).tag("Action")
+            LogView(vm:vm).tag("Log")
         }
     }
 }
