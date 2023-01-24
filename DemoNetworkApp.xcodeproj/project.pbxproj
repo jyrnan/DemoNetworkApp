@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D22F5A38297E82FD000D1524 /* PeerBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F5A37297E82FD000D1524 /* PeerBrowser.swift */; };
 		D239652929793BD90098FD50 /* NWParameters+InitWithPasscode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D239652829793BD90098FD50 /* NWParameters+InitWithPasscode.swift */; };
 		D26EBB0A297632F000BA2012 /* DemoNetworkAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB09297632F000BA2012 /* DemoNetworkAppApp.swift */; };
 		D26EBB0E297632F100BA2012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D26EBB0D297632F100BA2012 /* Assets.xcassets */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D22F5A37297E82FD000D1524 /* PeerBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerBrowser.swift; sourceTree = "<group>"; };
 		D239652829793BD90098FD50 /* NWParameters+InitWithPasscode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NWParameters+InitWithPasscode.swift"; sourceTree = "<group>"; };
 		D26EBB06297632F000BA2012 /* DemoNetworkApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoNetworkApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D26EBB09297632F000BA2012 /* DemoNetworkAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoNetworkAppApp.swift; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 		D26EBB282976392D00BA2012 /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				D22F5A37297E82FD000D1524 /* PeerBrowser.swift */,
 				D26EBB262976392500BA2012 /* PeerConnection.swift */,
 				D26EBB2929768A7500BA2012 /* PeerListener.swift */,
 				D239652829793BD90098FD50 /* NWParameters+InitWithPasscode.swift */,
@@ -176,6 +179,7 @@
 				D26EBB1C297634B600BA2012 /* AppViewModel.swift in Sources */,
 				D26EBB20297634B600BA2012 /* ActionView.swift in Sources */,
 				D239652929793BD90098FD50 /* NWParameters+InitWithPasscode.swift in Sources */,
+				D22F5A38297E82FD000D1524 /* PeerBrowser.swift in Sources */,
 				D26EBB2A29768A7500BA2012 /* PeerListener.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

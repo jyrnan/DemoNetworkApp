@@ -9,7 +9,9 @@ import SwiftUI
 
 class YMLNetwork {}
 
-class AppViewModel: ObservableObject, PeerListenerDelegate {
+class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate {
+  
+    
     // MARK: - Types
     
     enum AppType {
@@ -20,7 +22,12 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     static let mock = AppViewModel()
 //    static let shared = AppViewModel()
             
-    private init() { startListen() }
+    private init() {
+        self.browser = PeerBrowser(delegate: self)
+        startListen()
+    }
+    
+    var browser: PeerBrowser!
     
     var listener: PeerListener?
     var listenerSSL: PeerListener?
@@ -28,6 +35,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     
     @Published var hasSelectedDevice: UUID?
     @Published var connections: [PeerConnection] = []
+    @Published var results: Set<NWBrowser.Result> = Set()
         
     var servers: [PeerConnection] {connections.filter{$0.initatedConnection}}
     var clients: [PeerConnection] {connections.filter{!$0.initatedConnection}}
@@ -38,7 +46,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     func startListen() {
         guard listener == nil else { return }
         listener = PeerListener(on: 8899, delegate: self)
-        listenerSSL = PeerListener(delegate: self, name: "NWFramework", passcode: "8888")
+        listenerSSL = PeerListener(delegate: self, name: "DemoNWApp", passcode: "8888")
     }
     
     func startConnectionTo(host: String) {
@@ -54,7 +62,7 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     
     func send(message: Data, connectionID: UUID) {
         listener?.connectionsByID[connectionID]?.send(message: message)
-        if let connection = servers.filter({ $0.id == connectionID }).first {
+        if let connection = connections.filter({ $0.id == connectionID }).first {
             connection.send(message: message)
         }
     }
@@ -125,6 +133,20 @@ class AppViewModel: ObservableObject, PeerListenerDelegate {
     
     func ListenerFailed() {
         updateLog(with: "Listening failed")
+    }
+    
+    //MARK: - BroswerProtocol
+    
+    func refreshResults(results: Set<NWBrowser.Result>) {
+        self.results = results
+        if !results.isEmpty {
+            print(#line, "\(results.count) Device found")
+            results.forEach{print(#line, $0.endpoint)}
+        }
+    }
+    
+    func displayBrowseError(_ error: NWError) {
+        updateLog(with: error.debugDescription)
     }
 }
 

@@ -39,18 +39,22 @@ struct DeviceView: View {
                         localServerSSL
                     }
                     
-                    Section(header: Text("Server")) {
-                        if vm.servers.isEmpty {
-                            Text("No server").foregroundColor(.gray)
+                    Section(header: Text("Found Device")) {
+                        if vm.results.isEmpty {
+                            Text("No server found").foregroundColor(.gray)
                         }
-                        ForEach(vm.servers) { peer in
-                            deviceView(device: peer)
+                        ForEach(vm.results.map{$0.endpoint},id: \.hashValue) {result in
+                            Text(result.debugDescription)
                         }
                     }
                     
-                    Section(header: Text("Client")) {
-                        if vm.clients.isEmpty {
-                            Text("No client").foregroundColor(.gray)
+                    Section(header: Text("Peer Connection")) {
+                        if vm.clients.isEmpty && vm.servers.isEmpty {
+                            Text("No Connection").foregroundColor(.gray)
+                        }
+                        
+                        ForEach(vm.servers) { peer in
+                            deviceView(device: peer)
                         }
                         ForEach(vm.clients) { peer in
                             deviceView(device: peer)
@@ -70,7 +74,7 @@ struct DeviceView: View {
     func deviceView(device: PeerConnection?) -> some View {
         let isConnected = device?.id == vm.hasSelectedDevice
         HStack {
-            Image(systemName: "desktopcomputer")
+            Image(systemName:device?.initatedConnection == false ? "desktopcomputer" : "server.rack")
                 .font(.title)
                 .foregroundColor(isConnected ? .accentColor : .primary)
 
