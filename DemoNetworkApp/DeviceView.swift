@@ -70,7 +70,7 @@ struct DeviceView: View {
                     }
                     
                 }
-                Text(vm.logs.last?.content ?? "").foregroundColor(.gray).padding()
+                Text(vm.logs.last?.content ?? "").foregroundColor(.gray).padding().lineLimit(1)
             }
             
             .navigationTitle(Text("Devices"))
@@ -118,17 +118,17 @@ struct PeertypeView: View {
     var body: some View {
         switch type {
         case .udp:
-            Text("U").font(.caption)
+            Text("UDP").font(.caption)
                 .bold().foregroundColor(.white).padding(3)
-                .background(Circle().foregroundColor(.green))
+                .background(Capsule().foregroundColor(.green))
         case .tcp:
-            Text("T").font(.caption)
+            Text("TCP").font(.caption)
                 .bold().foregroundColor(.white).padding(3)
-                .background(Circle().foregroundColor(.blue))
+                .background(Capsule().foregroundColor(.blue))
         case .tcpSSL:
-            Text("S").font(.caption)
+            Text("SSL").font(.caption)
                 .bold().foregroundColor(.white).padding(3)
-                .background(Circle().foregroundColor(.orange))
+                .background(Capsule().foregroundColor(.orange))
         }
     }
 }

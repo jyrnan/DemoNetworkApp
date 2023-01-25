@@ -28,12 +28,13 @@ class PeerListener {
     var listener: NWListener?
     var port: UInt16 = 8899
     
+    //设置监听连接类型
     var type: PeerType = .tcp
     
     var connectionsByID: [UUID: PeerConnection] = [:]
     
     // 预设连接的类型参数
-    var parameters: NWParameters = .tcp
+//    var parameters: NWParameters = .tcp
     
     // 用于bonjour发现
     var name: String?
@@ -46,10 +47,6 @@ class PeerListener {
         self.port = port
         self.delegate = delegate
         self.type = type
-        
-        if case .udp = type {
-            parameters = .udp
-        }
         
         self.setupNoSSLListener()
     }
@@ -67,8 +64,17 @@ class PeerListener {
     
     // 创建一个指定端口号的监听者用来接收连接，根据指定类型来创建tcp或者udp，默认tcp
     private func setupNoSSLListener() {
+        let parameters: NWParameters
+        if case .tcp = type {
+            parameters = .tcp
+        } else {
+            parameters = .udp
+        }
+        
+        guard let port = NWEndpoint.Port(rawValue: port) else {return}
+        
         do {
-            let listener = try NWListener(using: parameters, on: .init(rawValue: port)!)
+            let listener = try NWListener(using: parameters, on: port)
             self.listener = listener
             
             self.startListening()
@@ -105,15 +111,7 @@ class PeerListener {
         self.listener?.stateUpdateHandler = self.listenerStateChanged
         
         // 处理新进入的连接的回调方法
-        self.listener?.newConnectionHandler = { newConnection in
-            
-            // 接受传入的NWConnection，并用它创建PeerConnection保存在PeerListener中
-            let peerConnection = PeerConnection(connection: newConnection, delegate: self)
-            peerConnection.type = self.type
-            
-            // 保存connection到收到的connection池中
-            self.connectionsByID[peerConnection.id] = peerConnection
-        }
+        self.listener?.newConnectionHandler = self.newConnectionHandler
         
         self.listener?.start(queue: DispatchQueue.global())
     }
@@ -123,13 +121,10 @@ class PeerListener {
             listener.cancel()
         }
         
+        // 停止并移除所有监听保存的连接
         self.connectionsByID.values.forEach { $0.cancel() }
         self.connectionsByID.removeAll()
     }
-
-    func setupApplicationServiceListener() {}
-    
-    func setupBonjourListener() {}
     
     func listenerStateChanged(newState: NWListener.State) {
         switch newState {
@@ -156,6 +151,17 @@ class PeerListener {
         default:
             break
         }
+    }
+    
+    private func newConnectionHandler(newConnection: NWConnection) {
+        // 接受传入的NWConnection，并用它创建PeerConnection保存在PeerListener中
+        let peerConnection = PeerConnection(connection: newConnection, delegate: self)
+        
+        // 设置Peer的类型和当前监听Peer类型一致
+        peerConnection.type = self.type
+        
+        // 保存connection到收到的connection池中
+        self.connectionsByID[peerConnection.id] = peerConnection
     }
 
     // MARK: - Send

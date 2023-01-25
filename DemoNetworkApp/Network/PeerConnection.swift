@@ -45,9 +45,9 @@ class PeerConnection {
     // 标记连接是主动发起连接还是被动接入连接
     let initatedConnection: Bool
     
-    // MARK: - Inits
+    // MARK: - inits
     
-    // 创建主动发起的连接，根据连接类型创建udp或tcp连接
+    // 创建主动发起的连接，根据连接类型创建不支持SSL的udp或tcp连接
     init(endpoint: NWEndpoint, delegat: PeerConnectionDelegate, type: PeerType = .tcp) {
         self.delegate = delegat
         self.endPoint = endpoint
@@ -155,10 +155,13 @@ class PeerConnection {
     func send(message: Data) {
         guard let connection = connection else { return }
         
+        // 如果是UDP连接协议，则采用这部分的接收方法
         if case .udp = type {
-            connection.send(content: message, completion: .contentProcessed {
-                [weak self] error in
+            print("Send \(message.count) bytes")
+            
+            connection.send(content: message, completion: .contentProcessed { [weak self] error in
                 guard let self = self else { return }
+                
                 if let error = error {
                     self.delegate?.connectionError(connection: self, error: error)
                 }
@@ -167,7 +170,7 @@ class PeerConnection {
             return
         }
         
-        // 数据封包方法
+        // 如果是TCP连接协议，数据采用加入长度头的封包方法
         let sizePrefix = withUnsafeBytes(of: UInt16(message.count).bigEndian) { Data($0) }
         
         print("Send \(message.count) bytes")

@@ -10,14 +10,7 @@ import SwiftUI
 class YMLNetwork {}
 
 class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate {
-  
-    
     // MARK: - Types
-    
-    enum AppType {
-        case SERVER
-        case CLIENT
-    }
     
     static let shared = AppViewModel()
             
@@ -33,34 +26,33 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
     var listenerSSL: PeerListener?
     var tempConnection: PeerConnection?
     
+    //设置TLS连接的PSK所需密码
+    let passcode = "8888"
+    
     @Published var hasSelectedDevice: UUID?
     @Published var connections: [PeerConnection] = []
     @Published var results: Set<NWBrowser.Result> = Set()
         
-    var servers: [PeerConnection] {connections.filter{$0.initatedConnection}}
-    var clients: [PeerConnection] {connections.filter{!$0.initatedConnection}}
+    var servers: [PeerConnection] { connections.filter { $0.initatedConnection }}
+    var clients: [PeerConnection] { connections.filter { !$0.initatedConnection }}
     @Published var logs: [Log] = []
         
     let testData: Data = "Test Data".data(using: .utf8)!
     
     func startListen() {
         guard listener == nil else { return }
-        listener = PeerListener(on: 8899, delegate: self,type: .tcp)
+        listener = PeerListener(on: 8899, delegate: self, type: .tcp)
         listenerUdp = PeerListener(on: 8898, delegate: self, type: .udp)
-        listenerSSL = PeerListener(delegate: self, name: (getWiFiAddress() ?? "NoWiFi"), passcode: "8888")
+        listenerSSL = PeerListener(delegate: self, name: getWiFiAddress() ?? "NoWiFi", passcode: passcode)
     }
     
     func startConnectionTo(host: String) {
         let hostStr = host.split(separator: ":").first ?? ""
         let port = UInt16(host.split(separator: ":").last ?? "") ?? 8899
         let endppint = NWEndpoint.hostPort(host: .init(String(hostStr)), port: .init(rawValue: port)!)
-        
-        let passcode = port == 8899 ? "" : "8888"
-        
-        //如果已经创建了的连接，则不再重复创建
+
+        // 如果已经创建了的连接，则不再重复创建
         guard connections.filter({ $0.endPoint == endppint }).isEmpty else { return }
-        
-        if tempConnection != nil {tempConnection?.cancel()}
         
         if port == 8898 {
             tempConnection = PeerConnection(endpoint: endppint, delegat: self, type: .udp)
@@ -71,12 +63,11 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
             return
         }
         
-       tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: passcode, delegat: self)
+        tempConnection = PeerConnection(endpoint: endppint, interface: nil, passcode: passcode, delegat: self)
     }
     
     func startConnectionTo(result: NWBrowser.Result) {
-        if tempConnection != nil {tempConnection?.cancel()}
-        tempConnection = PeerConnection(endpoint: result.endpoint, interface: result.interfaces.first, passcode: "8888", delegat: self)
+        tempConnection = PeerConnection(endpoint: result.endpoint, interface: result.interfaces.first, passcode: passcode, delegat: self)
     }
     
     func send(message: Data, connectionID: UUID) {
@@ -95,26 +86,28 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
             self.logs.append(Log(content: timeStr + ": " + string))
         }
         
-        UIImpactFeedbackGenerator(style: .heavy).impactOccurred() //震动提示
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred() // 震动提示
     }
     
     private func setSelectedPeer(connection: PeerConnection?) {
         DispatchQueue.main.async { [self] in
-            withAnimation{
-                self.hasSelectedDevice = connection?.id}
+            withAnimation {
+                self.hasSelectedDevice = connection?.id
+            }
         }
     }
     
     func addPeer(connection: PeerConnection) {
         DispatchQueue.main.async {
-            withAnimation{
-                self.connections.append(connection)}
+            withAnimation {
+                self.connections.append(connection)
+            }
         }
     }
     
     func removePeer(connection: PeerConnection) {
         DispatchQueue.main.async {
-            withAnimation{
+            withAnimation {
                 self.connections.removeAll(where: { $0.id == connection.id })
                 
                 // 如果断开的是当前连接设备，则清除当前连接设备
@@ -161,13 +154,13 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         updateLog(with: "Listening failed")
     }
     
-    //MARK: - BroswerProtocol
+    // MARK: - BroswerProtocol
     
     func refreshResults(results: Set<NWBrowser.Result>) {
         self.results = results
         if !results.isEmpty {
             print(#line, "\(results.count) Device found")
-            results.forEach{print(#line, $0.endpoint)}
+            results.forEach { print(#line, $0.endpoint) }
         }
     }
     
