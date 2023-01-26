@@ -125,8 +125,8 @@ struct PeertypeView: View {
             Text("TCP").font(.caption)
                 .bold().foregroundColor(.white).padding(3)
                 .background(Capsule().foregroundColor(.blue))
-        case .tcpSSL:
-            Text("SSL").font(.caption)
+        case .tls:
+            Text("TLS").font(.caption)
                 .bold().foregroundColor(.white).padding(3)
                 .background(Capsule().foregroundColor(.orange))
         }

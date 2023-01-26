@@ -56,7 +56,7 @@ class PeerListener {
         self.delegate = delegate
         self.name = name
         self.passcode = passcode
-        self.type = .tcpSSL
+        self.type = .tls
         self.setupBonjourTcpListener()
     }
     
@@ -166,8 +166,8 @@ class PeerListener {
 
     // MARK: - Send
     
-    func sendTo(id: UUID, message: Data) {
-        self.connectionsByID[id]?.send(message: message)
+    func sendTo(id: UUID, content: Data) {
+        self.connectionsByID[id]?.send(content: content)
     }
 }
 

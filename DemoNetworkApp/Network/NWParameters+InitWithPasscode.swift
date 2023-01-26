@@ -24,8 +24,8 @@ extension NWParameters {
 		self.includePeerToPeer = true
 
 		// Add your custom game protocol to support game messages.
-//		let gameOptions = NWProtocolFramer.Options(definition: GameProtocol.definition)
-//		self.defaultProtocolStack.applicationProtocols.insert(gameOptions, at: 0)
+		let peerOptions = NWProtocolFramer.Options(definition: PeerProtocol.definition)
+		self.defaultProtocolStack.applicationProtocols.insert(peerOptions, at: 0)
 	}
 
 	// Create TLS options using a passcode to derive a preshared key.

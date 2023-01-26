@@ -19,6 +19,7 @@
 		D26EBB25297638E500BA2012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB24297638E500BA2012 /* ContentView.swift */; };
 		D26EBB272976392500BA2012 /* PeerConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB262976392500BA2012 /* PeerConnection.swift */; };
 		D26EBB2A29768A7500BA2012 /* PeerListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26EBB2929768A7500BA2012 /* PeerListener.swift */; };
+		D2C8409029815E7F0012C2F1 /* PeerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C8408F29815E7F0012C2F1 /* PeerProtocol.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		D26EBB262976392500BA2012 /* PeerConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerConnection.swift; sourceTree = "<group>"; };
 		D26EBB2929768A7500BA2012 /* PeerListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerListener.swift; sourceTree = "<group>"; };
 		D26EBB3329778F5000BA2012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D2C8408F29815E7F0012C2F1 /* PeerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +99,7 @@
 				D26EBB262976392500BA2012 /* PeerConnection.swift */,
 				D26EBB2929768A7500BA2012 /* PeerListener.swift */,
 				D239652829793BD90098FD50 /* NWParameters+InitWithPasscode.swift */,
+				D2C8408F29815E7F0012C2F1 /* PeerProtocol.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -171,6 +174,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2C8409029815E7F0012C2F1 /* PeerProtocol.swift in Sources */,
 				D26EBB1F297634B600BA2012 /* LogView.swift in Sources */,
 				D26EBB0A297632F000BA2012 /* DemoNetworkAppApp.swift in Sources */,
 				D26EBB272976392500BA2012 /* PeerConnection.swift in Sources */,

@@ -21,7 +21,7 @@ enum PeerType: String, CustomStringConvertible {
     
     case udp
     case tcp
-    case tcpSSL // 支持bonjour发现和PSK的tcp连接
+    case tls // 支持bonjour发现和PSK的tls连接
 }
 
 class PeerConnection {
@@ -44,6 +44,8 @@ class PeerConnection {
     
     // 标记连接是主动发起连接还是被动接入连接
     let initatedConnection: Bool
+    
+    var heartbeatTimer:Timer?
     
     // MARK: - inits
     
@@ -68,7 +70,7 @@ class PeerConnection {
     init(endpoint: NWEndpoint, interface: NWInterface?, passcode: String, delegat: PeerConnectionDelegate) {
         self.delegate = delegat
         self.endPoint = endpoint
-        self.type = .tcpSSL
+        self.type = .tls
         
         let connection = NWConnection(to: endpoint, using: passcode == "" ? .tcp : NWParameters(passcode: passcode))
         self.connection = connection
@@ -147,19 +149,21 @@ class PeerConnection {
         
         // TODO: - 可以设置更灵活的queue
         connection.start(queue: DispatchQueue.main)
+        
+        startHeartbeat()
     }
     
     // MARK: - Send
     
-    // 设置发送消息，可以参考 sendMove(_ move: String)
-    func send(message: Data) {
+    // 设置发送消息，这里其实包括了三类形式：UDP直接发送， TLS下采用自定义形式，TCP下采用通用的封包方式
+    func send(content: Data) {
         guard let connection = connection else { return }
         
         // 如果是UDP连接协议，则采用这部分的接收方法
         if case .udp = type {
-            print("Send \(message.count) bytes")
+            print("Send \(content.count) bytes")
             
-            connection.send(content: message, completion: .contentProcessed { [weak self] error in
+            connection.send(content: content, completion: .contentProcessed { [weak self] error in
                 guard let self = self else { return }
                 
                 if let error = error {
@@ -170,10 +174,24 @@ class PeerConnection {
             return
         }
         
-        // 如果是TCP连接协议，数据采用加入长度头的封包方法
-        let sizePrefix = withUnsafeBytes(of: UInt16(message.count).bigEndian) { Data($0) }
+        // 如果是SSL连接协议，则采用这部分的接收方法
+        // 这部分对于数据处理采用了NWProtocolFramer协议
+        // 设置发送消息，可以参考 sendMove(_ move: String)
+        if case .tls = type {
+            // 先创建NWProtocolFramer.Message，主要是内容是message的type
+            let message = NWProtocolFramer.Message(peerMessageType: .data)
+            //将message放置在metaData中，来创建context
+            let context = NWConnection.ContentContext(identifier: "Data", metadata: [message])
+            // 通过connection发送时候带上context参数，isComplete设置成true
+            connection.send(content: content,contentContext: context, isComplete: true, completion: .idempotent)
+            
+            return
+        }
         
-        print("Send \(message.count) bytes")
+        // 如果是TCP连接协议，数据采用加入长度头的封包方法，这是通用的封包方法
+        let sizePrefix = withUnsafeBytes(of: UInt16(content.count).bigEndian) { Data($0) }
+        
+        print("Send \(content.count) bytes")
         
         connection.batch {
             connection.send(content: sizePrefix, completion: .contentProcessed { [weak self] error in
@@ -182,7 +200,7 @@ class PeerConnection {
                     self.delegate?.connectionError(connection: self, error: error)
                 }
             })
-            connection.send(content: message, completion: .contentProcessed { [weak self] error in
+            connection.send(content: content, completion: .contentProcessed { [weak self] error in
                 guard let self = self else { return }
                 if let error = error {
                     self.delegate?.connectionError(connection: self, error: error)
@@ -199,8 +217,8 @@ class PeerConnection {
             receiveByStream()
         case .udp:
             receiveByMessage()
-        case .tcpSSL:
-            receiveByStream()
+        case .tls:
+            receiveByPeerMessage()
         }
     }
     
@@ -208,7 +226,7 @@ class PeerConnection {
     func receiveByMessage() {
         guard let connection = connection else { return }
         
-        connection.receiveMessage { content, _, _, error in
+        connection.receiveMessage { content, context, _, error in
             
             if let data = content, !data.isEmpty {
                 self.delegate?.receivedMessage(content: content, message: nil)
@@ -225,7 +243,7 @@ class PeerConnection {
     
     // 设置接收指定字节数据，主要用于TCP？
     func receiveByStream() {
-        connection?.receive(minimumIncompleteLength: MemoryLayout<UInt16>.size, maximumLength: MemoryLayout<UInt16>.size) { content, _, isComplete, error in
+        connection?.receive(minimumIncompleteLength: MemoryLayout<UInt16>.size, maximumLength: MemoryLayout<UInt16>.size) { content, context, isComplete, error in
             var sizePrefix: UInt16 = 0
             
             // 解码获取长度值
@@ -243,7 +261,7 @@ class PeerConnection {
                 self.delegate?.displayAdvertizeError(error)
             } else {
                 // 获得数据包长度，继续调用方法获得该长度的数据
-                self.connection?.receive(minimumIncompleteLength: Int(sizePrefix), maximumLength: Int(sizePrefix)) { content, _, isComplete, error in
+                self.connection?.receive(minimumIncompleteLength: Int(sizePrefix), maximumLength: Int(sizePrefix)) { content, context, isComplete, error in
                     if let data = content, !data.isEmpty {
                         self.delegate?.receivedMessage(content: data, message: nil)
                     }
@@ -261,6 +279,49 @@ class PeerConnection {
                 }
             }
         }
+    }
+    
+    // 设置通过PeerMessage来实现收发，用于SSL
+    func receiveByPeerMessage(){
+        guard let connection = connection else { return }
+        
+        connection.receiveMessage { (content, context, isComplete, error) in
+            if let message = context?.protocolMetadata(definition: PeerProtocol.definition) as? NWProtocolFramer.Message {
+                self.delegate?.receivedMessage(content: content, message: message)
+            }
+            
+            if error == nil {
+                self.receiveByPeerMessage()
+            }
+        }
+    }
+    
+    //MARK: - Heartbeat
+    
+    func startHeartbeat() {
+        
+        guard initatedConnection, case .tls = type else { return }
+        
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { _ in
+            self.sendHeartbeat()
+        })
+        
+        heartbeatTimer?.fire()
+    }
+    
+    private func sendHeartbeat() {
+        guard let connection = connection else { return }
+        
+        let timestamp = Date()
+//        print("server heartbeat, timestamp: \(timestamp)")
+        
+        let content = "heartbeat, connection: \(self.name), timestamp: \(timestamp)\r\n".data(using: .utf8)
+        
+        let message = NWProtocolFramer.Message(peerMessageType: .heart)
+        let context = NWConnection.ContentContext(identifier: "heartbeat", metadata: [message])
+        
+        connection.send(content: content, contentContext: context, isComplete: true ,completion: .idempotent)
+//        print(#line, context.identifier)
     }
 }
 

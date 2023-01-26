@@ -54,7 +54,7 @@ struct ActionView: View {
                         .textFieldStyle(.roundedBorder)
                     Button("发送测试数据", action: {
                         guard vm.hasSelectedDevice != nil else {return}
-                        vm.send(message: text.data(using: .utf8)!,connectionID: vm.hasSelectedDevice!)
+                        vm.send(content: text.data(using: .utf8)!,connectionID: vm.hasSelectedDevice!)
                     })
                         .padding()
                         .buttonStyle(.borderedProminent)

@@ -70,9 +70,9 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
         tempConnection = PeerConnection(endpoint: result.endpoint, interface: result.interfaces.first, passcode: passcode, delegat: self)
     }
     
-    func send(message: Data, connectionID: UUID) {
+    func send(content: Data, connectionID: UUID) {
         if let connection = connections.filter({ $0.id == connectionID }).first {
-            connection.send(message: message)
+            connection.send(content: content)
         }
     }
     
@@ -131,8 +131,10 @@ class AppViewModel: ObservableObject, PeerListenerDelegate, PeerBrowserDelegate 
     }
     
     func receivedMessage(content: Data?, message: NWProtocolFramer.Message?) {
+       
         if let content = content, let contentStr = String(data: content, encoding: .utf8) {
-            updateLog(with: contentStr)
+//            if message is NWProtocolTCP.Metadata
+                updateLog(with: contentStr)
         }
     }
     
